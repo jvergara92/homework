@@ -61,13 +61,47 @@ class hashMap
     class const_iterator
     {
       public:
-        cell operator*()
+        const cell * operator->()
         {
-          return array[pos];
+          return &(hm->findAtPos(pos));
+        }
+        const const_iterator & operator++()
+        {
+          pos = hm->findNext(pos);
+          return *this;
+        }
+        bool operator!=(const const_iterator & rhs)
+        {
+          if(pos == rhs.pos && hm == rhs.hm)
+          {
+            return false;
+          }
+          return true;
         }
       private:
         int pos;
+        hashMap * hm;
+      friend class hashMap;
     };
+
+    const const_iterator begin(){
+      const_iterator itr;
+      int pos = 0;
+      if (array[0].active == false)
+      {
+        pos = findNext(pos);
+      }
+      itr.hm = this;
+      itr.pos = pos;
+      return itr;
+    }
+    
+    const const_iterator end(){
+      const_iterator itr;
+      itr.pos = arraySize;
+      itr.hm = this;
+      return itr;
+    }
 
   private:
     vector<cell> array;
@@ -92,5 +126,16 @@ class hashMap
     int hash(int key, int tableSize)
     {
       return key%tableSize;
+    }
+    int findNext(int pos)
+    {
+      do{
+        ++pos;
+      }while(array[pos].active == false && pos != arraySize);
+      return pos;
+    }
+    cell & findAtPos(int pos)
+    {
+      return array[pos];
     }
 };
