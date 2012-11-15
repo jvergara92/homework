@@ -9,6 +9,7 @@ class hashMap
 {
   public:
     explicit hashMap( int size = 101 ) : arraySize( size ){
+      array.clear();
       array.resize(arraySize+1);
     }
     hashMap(const hashMap & rhs){
@@ -21,6 +22,7 @@ class hashMap
     }
     ~hashMap()
     {
+      array.clear();
     }
     hashMap & operator=(const hashMap & rhs){
       if (&rhs != this)
@@ -37,12 +39,18 @@ class hashMap
     Value & operator[](const Key & key)
     {
         unsigned long long pos = hash(key, arraySize);
-        unsigned long long quad = 1;
-        while (array[pos].active != false && array[pos].first != key)
+        int count = 1;
+        int initial = 1;
+        while (array[pos].active != false && array[pos].first != key && count < arraySize)
         {
-          pos += quad;
+          pos = initial+(count*count);
           pos %= arraySize;
-          quad *= 2;
+          ++count;
+        }
+        if(count == arraySize)
+        {
+          rehash();
+          return operator[](key);
         }
         array[pos].first = key;
         array[pos].active = true;
@@ -137,5 +145,25 @@ class hashMap
     cell & findAtPos(int pos)
     {
       return array[pos];
+    }
+    void rehash()
+    {
+      vector<cell> oldArray = array;
+      array.clear();
+      array.resize(arraySize*2+1);
+      int hashVal;
+      for(int i = 0; i != arraySize; ++i)
+      {
+        if(oldArray[i].active == false)
+        {
+          continue;
+        }
+        hashVal = hash(oldArray[i].first, arraySize*2);
+        array[hashVal].first = oldArray[i].first;
+        array[hashVal].second = oldArray[i].second;
+        array[hashVal].active = true;
+      }
+      arraySize *= 2;
+      
     }
 };
