@@ -1,16 +1,19 @@
 #include <string>
 #include <iostream>
+#include <vector>
+
+using namespace std;
 
 template <class Key,class Value>
 class hashMap
 {
   public:
     explicit hashMap( int size = 101 ) : arraySize( size ){
-      array = new cell[arraySize];
+      array.resize(arraySize+1);
     }
     hashMap(const hashMap & rhs){
       arraySize = rhs.arraySize;
-      array = new cell[arraySize];
+      array.resize(arraySize+1);
       for(int i = 0; i < arraySize; i++)
       {
         array[i] = rhs.array[i];
@@ -18,14 +21,13 @@ class hashMap
     }
     ~hashMap()
     {
-      delete[] array;
     }
     hashMap & operator=(const hashMap & rhs){
       if (&rhs != this)
       {
-        delete[] array;
         arraySize = rhs.arraySize;
-        array = new cell[arraySize];
+        array.clear();
+        array.resize(arraySize+1);
         for(int i = 0; i < arraySize; i++)
         {
           array[i] = rhs.array[i];
@@ -36,23 +38,23 @@ class hashMap
     {
         unsigned long long pos = hash(key, arraySize);
         unsigned long long quad = 1;
-        while (array[pos].deleted != true && array[pos].first != key)
+        while (array[pos].active != false && array[pos].first != key)
         {
           pos += quad;
           pos %= arraySize;
           quad *= 2;
         }
         array[pos].first = key;
-        array[pos].deleted = false;
+        array[pos].active = true;
         return array[pos].second;
     }
 
     struct cell{
       Key first;
       Value second;
-      bool deleted;
+      bool active;
       cell(){
-        deleted = true;
+        active = false;
       }
     };
 
@@ -68,7 +70,7 @@ class hashMap
     };
 
   private:
-    cell * array;
+    vector<cell> array;
     int arraySize;
     int hash(const std::string & key, int tableSize)
     {
